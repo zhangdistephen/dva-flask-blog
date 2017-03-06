@@ -64,5 +64,5 @@ def index():
 if __name__ == '__main__':
     app.run()
 ```
-此时我们输入localhost:5000/users **注意：路由改成了/users所以要访问localhost:5000/users了，而不是根路由localhost:5000了**就能看到浏览器返回了刚刚的json数据.
+此时我们输入localhost:5000/users,就能看到浏览器返回了刚刚的json数据. **注意：路由改成了/users所以要访问localhost:5000/users了，而不是根路由localhost:5000了**
 ![img_users](http://oh8c4fk40.bkt.clouddn.com/0A9BE314-523D-452A-97C6-55E93E236439.png)
