@@ -11,3 +11,22 @@
 from flask import Flask
 app = Flask(__name__)
 ```
+ok,现在我们已经有了一个web应用了，但这个应用有啥用呢？我们知道，当我们调用RESTful api的时候，请求一个url，类似https://api.example.com/users ，然后就会获得一些数据，最常见的是json数据：
+```json
+{"users":[
+{
+"name":"xiaoming",
+"age":18
+},
+{
+"name":"xiaohua",
+"age":19
+}
+]}
+```所以我们要做的就是搞出一个这样的url来。
+在flask里，使用的是一个装饰器：app.route来定义路由.
+```python
+@app.route('/')
+      def index():
+          return '<h1>Hello World!</h1>'
+```
