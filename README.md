@@ -45,20 +45,20 @@ if __name__ == '__main__':
 from flask import Flask, json
 app = Flask(__name__)
 
-@app.route('/')
+@app.route('/users')
 def index():
-    respJson = json.dumps({users:[
-                  {
-                  id:1,
-                  name:"xiaoming",
-                  age:18
-                  },
-                  {
-                  id:2,
-                  name:"xiaohua",
-                  age:19
-                  }
-                  ]})
+    respJson = json.dumps({"users": [
+    {
+        "id": 1,
+        "name": "xiaoming",
+        "age": 18
+    },
+    {
+        "id": 2,
+        "name": "xiaohua",
+        "age": 19
+    }
+]})
     return respJson
     
 if __name__ == '__main__':
