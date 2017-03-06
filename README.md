@@ -6,4 +6,8 @@
 提供API，便于前端调用。说白了，就是提供数据。
 
 1.连接数据库：
-先谈谈怎样构造一个flask的后端。
+先谈谈怎样构造一个flask的后端。首先建立一个flask的web应用：
+```python
+from flask import Flask
+app = Flask(__name__)
+```
