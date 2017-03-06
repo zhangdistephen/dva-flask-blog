@@ -15,19 +15,52 @@ ok,现在我们已经有了一个web应用了，但这个应用有啥用呢？�
 ```json
 {"users":[
 {
+"id":1,
 "name":"xiaoming",
 "age":18
 },
 {
+"id":2,
 "name":"xiaohua",
 "age":19
 }
 ]}
 ```
 所以我们要做的就是搞出一个这样的url来。
-在flask里，使用的是一个装饰器：app.route来定义路由.
+在flask里，使用的是一个装饰器：app.route来定义路由(url).
 ```python
 @app.route('/')
-      def index():
-          return '<h1>Hello World!</h1>'
+def index():
+    return '<h1>Hello World!</h1>'
+```
+这段代码的意思是以根路径'/'为路由，定义一个路由函数:index,这个路由函数返回一串数据。在本例里，这个数据是一段html。于是当我们启动这个web应用的时候，就能看到一个"Hello World!"的页面。启动web应用的代码：
+```python
+if __name__ == '__main__':
+   app.run()
+```
+等等，刚刚不是说好的要返回json数据吗，怎么返回了一个"Hello World!"的页面？？？
+因为作为一个码农，写个demo必定要"Hello World!"一下才爽啊！
+言归正传，怎样返回json数据呢？想必同学们都应该看懂了，路由函数里return什么值，我们访问这个路由就会得到什么值。所以我们就把```<h1>Hello World!</h1>```改成那段json数据就行了。对了，那么路由就不应该是根路由'/'了，而是我们刚刚举的例子里的'/users'。flask里有一个包叫json，负责把python的dict数据与json格式的数据互相转换。于是整个代码是这个样子:
+```python
+from flask import Flask, json
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    respJson = json.dumps({users:[
+                  {
+                  id:1,
+                  name:"xiaoming",
+                  age:18
+                  },
+                  {
+                  id:2,
+                  name:"xiaohua",
+                  age:19
+                  }
+                  ]})
+    return respJson
+    
+if __name__ == '__main__':
+    app.run()
 ```
