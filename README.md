@@ -33,7 +33,7 @@ ok,现在我们已经有了一个web应用了，但这个应用有啥用呢？�
 def index():
     return '<h1>Hello World!</h1>'
 ```
-这段代码的意思是以根路径'/'为路由，定义一个路由函数:index,这个路由函数返回一串数据。在本例里，这个数据是一段html。于是当我们启动这个web应用的时候，就能看到一个"Hello World!"的页面。启动web应用的代码：
+这段代码的意思是以根路径'/'为路由，定义一个路由函数:index,这个路由函数返回一串数据。在本例里，这个数据是一段html。于是当我们启动这个web应用的时候，就能在本机的5000端口看到一个"Hello World!"的页面，也就是你在浏览器输入localhost:5000就能看到这个页面。启动web应用的代码：
 ```python
 if __name__ == '__main__':
    app.run()
@@ -64,3 +64,5 @@ def index():
 if __name__ == '__main__':
     app.run()
 ```
+此时我们输入localhost:5000/users **注意：路由改成了/users所以要访问localhost:5000/users了，而不是根路由localhost:5000了**就能看到浏览器返回了刚刚的json数据.
+![img_users](http://oh8c4fk40.bkt.clouddn.com/0A9BE314-523D-452A-97C6-55E93E236439.png)
