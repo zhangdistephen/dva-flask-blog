@@ -286,6 +286,5 @@ class Post(db.Model):
 
 可是，怎样给posts里添加数据呢？兄弟，一样类似users不就好了嘛。可是，这样是不是太不优雅了，而且我是要用户在浏览器那里输入博客文章，自动传到数据库里去呀，而不是总是拿着shell往数据库里添加数据呀！！！
 
-好的好的，这样就需要前端啦！那么我们来进入React的前端世界吧！
-
-
+好的好的，这样就需要前端啦！那么我们来进入React的前端世界吧！  
+后端完整代码看这个[commit](https://github.com/zhangdistephen/dva-flask-blog/commit/9b2390c9c13346da4cc2b03cf576ce42b424cf38#diff-3f41e546893dc64b71aaacad12cad815)
