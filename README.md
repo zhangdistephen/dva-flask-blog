@@ -41,7 +41,7 @@ if __name__ == '__main__':
 ```
 等等，刚刚不是说好的要返回json数据吗，怎么返回了一个"Hello World!"的页面？？？
 因为作为一个码农，写个demo必定要"Hello World!"一下才爽啊！
-言归正传，怎样返回json数据呢？想必同学们都应该看懂了，路由函数里return什么值，我们访问这个路由就会得到什么值。所以我们就把```<h1>Hello World!</h1>```改成那段json数据就行了。对了，那么路由就不应该是根路由'/'了，而是我们刚刚举的例子里的'/users'。flask里有一个包叫json，负责把python的dict数据与json格式的数据互相转换。于是整个代码是这个样子:
+言归正传，怎样返回json数据呢？想必同学们都应该看懂了，路由函数里return什么值，我们访问这个路由就会得到什么值。所以我们就把```<h1>Hello World!</h1>```改成那段json数据就行了。对了，那么路由就不应该是根路由'/'了，而是我们刚刚举的例子里的'/users'。flask里有一个包叫json，负责把python的dict，list数据与json格式的数据互相转换。于是整个代码是这个样子:
 ```python
 from flask import Flask, json
 app = Flask(__name__)
@@ -110,24 +110,20 @@ id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 name VARCHAR(40) NOT NULL,
 age INT);
 ```  
-
 比如查询这个表里的年龄为18的那条数据：
 ```sql
 select * from users where age=18;
-```  
-
-
+```  
 不是太贴近人类语言的感觉，更像是给机器发布的一条命令。
 SQLAlchemy就闪亮登场。它把数据库里的表变成一个对象，也可以说变成了一个模型,把SQL查询语言用更高级的操作对象的方法来封装。  
-把users这个表变成对象User:  
-
+把users这个表变成对象User：  
 
 ```python
 class User(db.Model):  
 	__tablename__ = 'users'
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(64), unique=True)
-	age = db.Column(db.Interger)
+	age = db.Column(db.Integer)
 	def __repr__(self):	//这个方法就是当你调用User的实例（比如xiaoming）的时候，它会返回<Role "xiaoming">
 		return '<Role %r>' % self.name 
    
@@ -154,14 +150,142 @@ User.query.filter_by(age=18).all()
 好的，啰嗦了半天，终于能够连接数据库了。  
 首先配置一下数据库：  
 ```python
+from flask import Flask
+import os
 from flask.ext.sqlalchemy import SQLAlchemy
 basedir = os.path.abspath(os.path.dirname(__file__))  
 app = Flask(__name__) 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///' + os.path.join(basedir, 'data.sqlite')
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True  
 db = SQLAlchemy(app)  
 ```  
 
-解释一下，```basedir```是这个项目的根路径，app为实例化的Flask项目，就像我们之前做的那样。下面的两个```app.config```分别是配置数据库的地址，配置每次请求结束后都自动提交数据库中的变动。最后一句是实例化SQLAlchemy，并且连上这个项目。也就是说，db就是这个项目的数据库（被SQLAlchemy转变成的对象）
+解释一下，```basedir```是这个项目的根路径，app为实例化的Flask项目，就像我们之前做的那样。下面的两个```app.config```分别是配置数据库的地址，配置每次请求结束后都自动提交数据库中的变动。最后一句是实例化SQLAlchemy，并且连上这个项目。也就是说，db就是这个项目的数据库被SQLAlchemy转变成的对象.
+再加上前面的路由函数，我们的程序是这样：
+```python
+//下面这段程序写在app.py这个文件里
+from flask import Flask,json
+import os
+from flask.ext.script import Manager
+from flask.ext.sqlalchemy import SQLAlchemy
+basedir = os.path.abspath(os.path.dirname(__file__))
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
+db = SQLAlchemy(app)
+manager = Manager(app)
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True)
+    age = db.Column(db.Integer)
+    def __repr__(self):
+        return '<User %r>' % self.name
+@app.route('/users')
+def users():  
+    respJson=json.dumps(User.query.all())
+    return respJson
+
+if __name__=='__main__':
+    manager.run()
+```
+我们这个程序里面好像多了一个刚刚没有提到的东西：manager。这玩意是在我们的app外面套了层套子，让我们的app变得更方便调试，并且多了一个用shell调试的功能。你没有看错，不需要用网页来调试，我们可以直接用shell来调试。  
+如果你直接开始运行这段程序，那么恭喜你，会报错。为啥呢？因为我们的数据库还没有成功创建users这个表。估计你要问了，我们不是已经有了User这个类了吗，他不就是users这个表的高级封装吗（即将表变为对象）？是的，没错，它只是个高级抽象，你还需要让他真正变成数据库里的表啊。
+
+于是我们要打开shell,把这个表创建了。  
+
+```shell
+python app.py shell  
+>>> from app import db  
+>>> db.create_all()  
+```  
+
+好的，这次终于大功告成了。
+
+现在按control+C退出shell,然后运行app.py。
+
+现在你访问localhost:5000/users，你会惊奇的发现，有个中括号。纳尼，怎么只有一个中括号，数据呢？？？User里不是应该有xiaoming和xiaohua的吗？别急，你还没添加呢。
+
+还是打开shell,(你可以先把正在跑着的app.py程序control+c退出掉，也可以刚刚就把app.py用下面这个命令在后台运行```python app.py runserver &```)
+
+```shell
+python app.py shell
+>>> from app import db
+>>> from app import User
+>>> xiaoming = User(id=1, name="xiaoming", age=18)
+>>> xiaohua = User(id=2, name="xiaohua", age=19)
+>>> db.session.add(xiaoming)
+>>> db.session.add(xiaohua)
+>>> db.session.commit()
+```
+
+好的，在上面的代码里面，我们创建了xiaoming和xiaohua这两个数据，然后把这两个数据通过会话(session)添加到db里，别忘了，最后一定要commit()，因为这样表示你确认要提交这两个add操作。如果你用过git的话，这个和git add 后一定要git commit 是一个道理。
+
+这个时候你再运行app.py这个程序，再去访问localhost:5000/users，你满心欢喜的以为小明和小华会跑出来见你的时候，你发现报了个错，囧：
+
+```python
+TypeError: <Role u'xiaoming'> is not JSON serializable
+```
+
+错误说：<Role u'xiaoming'>这玩意儿不能变成json格式。对哦，json这个库只能把dict或者list变成json，<Role u'xiaoming'>是个实例，咦，话说为什么会返回这个实例呢？我们看User.query.all()返回了什么东西.同样的，我们在shell里这么干。现在知道Manager的好处了吧，测试起来很方便。
+
+```shell
+python app.py shell
+>>> from app import User
+>>> User.query.all()
+[<User u'xiaoming'>, <User u'xiaohua'>]
+```
+返回了一个list，里面装着两个实例。我们需要的是这两个实例的属性：id,name,age。所以呢，就在这个类里写个方法，返回它的这些属性。
+
+
+```python
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True)
+    age = db.Column(db.Integer)
+    def __repr__(self):
+        return '<User %r>'%self.name
+    def to_json(self):
+        return {"id": self.id,
+                    "name": self.name,
+                    "age": self.age}
+```    
+
+然后改一下路由函数返回的值：
+
+```python
+@app.route('/users')
+def users():  
+    users = User.query.all()
+    return json.dumps([user.to_json() for user in users])
+```    
+
+注意一下return的东西，由于users里的元素都是User实例，所以对每一个实例调用to_json()的方法，返回一串dict,然后把这两个dict组成的list通过json.dumps变成了json。
+
+此时你在浏览器中输入localhost:5000/users，你会发现，小明小华终于回来了！
+
+现在我们和小明小华这两兄弟说拜拜了，我们需要的是博客文章，所以要一个新的表，对于SQLAlchemy来说也就是一个新的模型：Post。
+
+类似User，我们搞一个Post出来：
+```python
+class Post(db.Model):
+    __tablename__ = 'posts'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(64), unique=True)
+    text = db.Column(db.Text)
+    def __repr__(self):
+        return '<Post %r>'%self.title
+    def to_json(self):
+        return {"id": self.id,
+                    "title": self.title,
+                    "text": self.text}
+```  
+
+同样的，先要通过shell,创建posts这个表，具体方法回头参考一下users是怎么创建的。  
+
+可是，怎样给posts里添加数据呢？兄弟，一样类似users不就好了嘛。可是，这样是不是太不优雅了，而且我是要用户在浏览器那里输入博客文章，自动传到数据库里去呀，而不是总是拿着shell往数据库里添加数据呀！！！
+
+好的好的，这样就需要前端啦！那么我们来进入React的前端世界吧！
 
 
