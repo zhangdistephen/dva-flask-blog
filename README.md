@@ -224,7 +224,7 @@ python app.py shell
 这个时候你再运行app.py这个程序，再去访问localhost:5000/users，你满心欢喜的以为小明和小华会跑出来见你的时候，你发现报了个错，囧：
 
 ```python
-TypeError: <Role u'xiaoming'> is not JSON serializable
+TypeError: <User u'xiaoming'> is not JSON serializable
 ```
 
 错误说：<Role u'xiaoming'>这玩意儿不能变成json格式。对哦，json这个库只能把dict或者list变成json，<Role u'xiaoming'>是个实例，咦，话说为什么会返回这个实例呢？我们看User.query.all()返回了什么东西.同样的，我们在shell里这么干。现在知道Manager的好处了吧，测试起来很方便。
@@ -288,3 +288,5 @@ class Post(db.Model):
 
 好的好的，这样就需要前端啦！那么我们来进入React的前端世界吧！  
 后端完整代码看这个[commit](https://github.com/zhangdistephen/dva-flask-blog/commit/9b2390c9c13346da4cc2b03cf576ce42b424cf38#diff-3f41e546893dc64b71aaacad12cad815)
+
+
