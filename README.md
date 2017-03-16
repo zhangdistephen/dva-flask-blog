@@ -6,7 +6,7 @@
 连接数据库，从数据库中拿出前端需要展现的数据。
 提供API，便于前端调用。说白了，就是提供数据。
 
-###连接数据库：
+### 连接数据库：
 
 1.构造一个最简单的flask后端。
 先谈谈怎样构造一个flask的后端。首先建立一个flask的web应用：
@@ -253,7 +253,7 @@ class User(db.Model):
                     "name": self.name,
                     "age": self.age}
 ```    
-
+ 
 然后改一下路由函数返回的值：
 
 ```python
@@ -291,10 +291,10 @@ class Post(db.Model):
 好的好的，这样就需要前端啦！那么我们来进入React的前端世界吧！  
 后端完整代码看这个[commit](https://github.com/zhangdistephen/dva-flask-blog/commit/9b2390c9c13346da4cc2b03cf576ce42b424cf38#diff-3f41e546893dc64b71aaacad12cad815)
 
-##前端  
+## 前端  
 
 
-###博客数据展示  
+### 博客数据展示  
 
 
 
@@ -759,7 +759,7 @@ export default function MainLayout({selectedKey,children}) {
 
 接下来有个问题是，怎么把前端用户输入的数据传入数据库，因为我们需要用户在前端写好博客，然后我们的程序把博客送到数据库里存储。而不是我们每次写博客都用shell添加。
 
-###博客数据添加  
+### 博客数据添加  
 
 有了前面的经验，这次我们如法炮制。
 
