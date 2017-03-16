@@ -289,4 +289,473 @@ class Post(db.Model):
 好的好的，这样就需要前端啦！那么我们来进入React的前端世界吧！  
 后端完整代码看这个[commit](https://github.com/zhangdistephen/dva-flask-blog/commit/9b2390c9c13346da4cc2b03cf576ce42b424cf38#diff-3f41e546893dc64b71aaacad12cad815)
 
+##前端
+
+###博客数据展示
+
+说起前端，就是三剑客html,css,js。那么直接用这三个东西写前端不就好了嘛，为什么要搞个react呢。
+
+不提性能这些东西，因为react能让你的代码更加清晰，它规定了一些条条框框，你按照这个条条框框写就能让你的代码更容易维护。而且，我们说的react并不是简简单单的react框架，而是一整个react生态圈，包括react-router,redux,react-redux,redux-saga。看起来东西很多，但其实只需要了解他们的思想，然后把它们都当成工具来用就好了。除了这些，还要知道npm,一个下载我们需要的包的东西，还要知道webpack，一个帮我们打包代码的东西，还要知道babel，一个帮我们翻译我们超前的js代码的东西。
+
+我的天，前端这么多东西，什么时候才可以编程啊。
+
+不要害怕，这些东西目前我们都当成工具来用就行。甚至直接有一个把这些工具全部封装起来的一个更方便的工具：dva。没错，就是守望先锋里的那个dva，就冲这个名字就要star一下这个项目了。
+
+好的，废话不多说，我们直接开始吧。
+
+首先，把npm下下来，怎么下？看[廖雪峰老师的教程](http://www.liaoxuefeng.com/wiki/001434446689867b27157e896e74d51a89c25cc8b43bdb3000/00143450141843488beddae2a1044cab5acb5125baf0882000)
+
+有了npm，再把dva下下来，只需要在shell里输入  
+
+```SHELL
+npm install dva-cli -g
+```
+有了dva，就能自动构建一个我们需要的环境啦，在shell里输入  
+
+```shell
+dva new dva-flask-blog
+```
+
+等他创建好，你应该就有了一大堆文件夹和文件，解释一下各个文件夹是干嘛的，mock不用管，是用来做虚拟数据的，我们不需要。node_modules就是我们存放npm下载下来的依赖的地方。public里面放的是index.html，这个不需要解释了吧。最关键的是src文件夹，里面很多层东西，这个我们等会细讲。下面这些点开头的文件，就不细讲。注意一下package.json这个文件，里面是npm的配置信息。比如你安装了哪些库呀，
+
+好的，重点来看看src里的文件。
+
+为什么要划分这么多文件夹？？？为了让项目的层次分明，每一个文件夹里的文件都有着类似的功能。
+  
+* assets：存放静态资源。比如图片。
+* components：存放react的UI组件。（啥叫组件？等会说）
+* models：存放数据模型。（怎么感觉好像数据库？等会说）
+* routes：存放路由组件。（路由我知道，后端里刚刚讲了这个概念！聪明，但react的路由稍微有一点区别哦，而且它也是个react组件哦）
+* services：用来存放和后端进行数据交互的函数的文件。
+* utils：一些工具函数咯。
+* router.js：吧routes里的路由组件拿进来，并且给每个路由组件分配一个路由。（就是你进入某个路由，你就能看到对应的那个路由组件啦。）
+* index.js:引入models和routes。
+
+好的，看完了这些东西，是不是一头雾水，怎么这么一大堆文件夹，这么堆概念。其实，重要的概念就两个：**组件**，**模型**。
+
+先来看看什么是**组件**：
+
+
+你肯定见过```<p>我很酷</p>```这个东西,这个不就是个文本标签嘛，html里的东西。可是，你有没有想过，我们可不可以自己创造一个html标签？开玩笑的吧，这应该是研究html的协会做的事吧。不过实际上，你的确可以创造一个html标签，只不过是把原有的html标签组合一下，形成一个新的标签。这个标签，在react里，我们就称他为组件。比如你定义一个组件```<Ku></Ku>```这个组件等同于```<p>我很酷</p>```ok，那么在你需要显示```<p>我很酷</p>```的地方，你只需要放一个```<Ku></Ku>```就行了。
+
+react里的组件还有生命周期，状态，属性这些东西。不过暂时先不用了解，代码写到那里的时候我们再说。
+
+说完了组件，我们说说**模型**。其实完全可以把模型理解为一个全局对象。模型有自己的名字(namespace),有自己的状态(state),有自己的方法，同步的方法（reducers），异步的方法(effects)。
+
+为了更好的理解组件和模型，我们来设想一个情况。
+
+我写了三篇博客文章，但在首页我只想展示一篇文章。那么文章（posts)就是我们的**模型**。它有两个状态，一个状态是```data:[{id:1,text:"post1"},{id:2,text:"post2"},{id:3,text:"post3"}]```,另一个状态是```currentDisplay:{id:1,text:"post1"}```所以如果我们想把首页的展示文章换一篇，那么只需要修改```currentDisplay```这个状态就行。
+
+假如我们在首页放一个div容器，这个div里装的是文章，文章背景要黑色，字要白色，鼠标点击这个div，就要换一篇文章。那么，我们就可以把这个div容器做成一个**UI组件**。伪代码是
+
+```html
+<Post />  
+等于 
+<div beiDianJile={changeDisplay}  background='black'>
+	<p>{posts.currentDisplay.text}</p>
+</div>
+```
+
+假如你还希望在首页看到```欢迎您，Master```这几个字，你甚至可以把这几个字也做成一个**UI组件**（如果你很闲的话）
+
+```html
+<Welcome />  
+等于 
+<p>欢迎您，Master</p>
+```
+
+你在某个路由看到的所有东西的集合，就是**路由组件**。假如首页(即根路由'/')只出现一篇文章和一个欢迎您的话，那么你的**路由组件**就可以这么写
+
+```html
+<Index />  
+等于 
+<div>
+	<Welcome />
+	<Post />
+</div>	
+```  
+**注意：这里必须在```<Welcome />和<Post />```外面套一层div，因为react规定了一个组件只能等于一个标签。如果不加div，就是让```<Index /> ```等于两个标签了。**
+
+现在对于这些东西不是那么迷糊了吧？那么我们开始写代码吧。
+
+代码最好从models里写起，比如我们的博客需要展示我们的文章，那么先搞一个名为posts的model出来。
+
+我个人认为models主要有4个要点:
+
+1.状态（state)
+
+2.异步请求（effects)
+
+3.同步请求（reducers）
+
+4.监测用户和浏览器行为（subscriptions）
+
+状态比较好理解，在这个角度可以把模型理解为存储状态的东西。
+
+异步请求主要是与服务器进行交互，从服务器这里拿数据。
+
+同步请求主要是把服务器的数据经过筛选、判断后，存到状态里。
+
+监测用户的行为主要是监测用户按了哪些键之类的行为。监测浏览器行为主要是监测目前的路由是什么，针对不同的路由，执行不同的行为。
+
+```JavaScript
+import * as postsService from '../services/posts'
+export default{
+  namespace:'posts',
+  state:{
+    data:[],
+    currentDisplay:{}
+  },
+  effects: {
+    *fetch({},{call,put}){
+      const {data}=yield call(postsService.fetchPosts)
+      yield put({
+        type: 'save', payload: {
+          data,
+          currentDisplay:data[0]
+        }
+      })
+    }
+  },
+  reducers:{
+    save(state,{payload}){
+      return{...state,...payload}
+    }
+  },
+  subscriptions:{
+    setup({dispatch}){
+      dispatch({type:'fetch'})
+    }
+  }
+}
+```
+
+我们这里的第一句就让人有些搞不明白了，services是什么东西？前面我们讲过，services是用来存放和后端进行数据交互的函数的文件，而models里需要进行异步请求，所以就从services里引入这些函数。你可能要问，为什么不把这些函数直接放在models里呢？这样的话，models看起来就会很杂，有很多和服务器交互的函数，有很多维护自己状态的函数。所以不如把和服务器交互的函数放在services里，这样结构更清晰。
+
+后面定义了posts的命名空间（也就是给这个模型里的effects和reducers加了个前缀，确保不会和其他模型的同名函数重复），定义了两个状态,一个是所有的文章```data```，另一个是首页显示的文章```currentDisplay```。
+
+effects里装的是一些异步请求，目前只有一个，也就是```*fetch```, 前面的星号是什么意思呢？这表示这个函数是generator，generator的定义请看阮一峰老师的[es6教程：Generator函数](http://es6.ruanyifeng.com/#docs/generator)。简单来说，就是在函数执行的过程中，遇到yield，就停下来，等到yield的东西执行完了，把返回的值拿到手，然后继续执行。我们这里的```fetch```很简单，```call```了一个services里请求服务器数据的函数，将它返回的对象里的```data```装入我们的常量```data```里。注意，这里用了解构赋值，具体请看阮一峰老师的[es6教程：变量的解构赋值](http://es6.ruanyifeng.com/#docs/destructuring)。简单来说就是假如有这么一个对象```post={data:"haha",title:"xixi"}```,执行```const {data}=post```，得到的```data```就是```haha```，相当于执行了```const data=post.data```。
+
+然后执行了```yield put```,相当于发起一个行为（action），这个action就是下面reducers里的save，作用是把数据存到posts这个模型的状态里。
+
+最后的subscriptions里的setup表示当用户进入我们的前端页面的时候，就执行。我们的这个函数发起了一个名叫fetch的action，也就是我们effects里的fetch。这里的这个dispatch和刚刚的put是一个意思，都是发起行为。
+
+先写models，是为了对数据有了一个完整的印象，通过写models，我们了解了数据是通过调用services里的和服务器交互的异步函数拿到的，然后通过同步请求将数据存到模型的状态里。然后要数据的时间不是随随便便的，而是进入我们的前端页面的时候。
+
+接下来写services里的函数，我们要怎么问服务器要数据呢？
+
+```JavaScript
+import request from '../utils/request'
+export function fetchPosts(){
+  return request(`/api/posts`)
+}
+```
+没错，就这么几行。就是用了request这个函数问服务器要数据。那么request又是何方神圣呢？你甚至可以不用了解，而是把这个当成一个底层的工具来使用。因为要数据的函数内部都大同小异，完全可以当成工具来用。这里还是展示一下吧：
+
+```javascript
+import fetch from 'dva/fetch';
+
+function parseJSON(response) {
+  return response.json();
+}
+
+function checkStatus(response) {
+  if (response.status >= 200 && response.status < 300) {
+    return response;
+  }
+
+  const error = new Error(response.statusText);
+  error.response = response;
+  throw error;
+}
+
+/**
+ * Requests a URL, returning a promise.
+ *
+ * @param  {string} url       The URL we want to request
+ * @param  {object} [options] The options we want to pass to "fetch"
+ * @return {object}           An object containing either "data" or "err"
+ */
+export default function request(url, options) {
+  return fetch(url, options)
+    .then(checkStatus)
+    .then(parseJSON)
+    .then(data => ({ data }))
+    .catch(err => ({ err }));
+}
+```
+
+内部是怎么执行的对初学者来说不重要，你需要了解的就是这个函数如果请求到数据了，就会返回数据，没请求到数据，就会返回错误。
+
+
+有了数据，那么我们来看怎么展现。说起展现，那么肯定是和UI有关了，在react里，有个非常好的UI库，叫ant design，简称antd，是阿里巴巴公司的UI库。所以我们先把这个库装了。```npm install antd --save --registry=https://registry.npm.taobao.org```
+
+然后由于antd的组件导入有些小问题，所以我们装个阿里出的补丁，```npm i babel-plugin-import --save-dev --registry=https://registry.npm.taobao.org```
+
+然后在```.roadhogrc```里配置一下，
+
+```
+{
+  "entry": "src/index.js",
+  "env": {
+    "development": {
+      "extraBabelPlugins": [
+        "dva-hmr",
+        "transform-runtime",
+        ["import", { "libraryName": "antd", "style": "css" }]
+      ]
+    },
+    "production": {
+      "extraBabelPlugins": [
+        "transform-runtime"
+      ]
+    }
+  },
+  "proxy": {
+    "/api": {
+      "target": "http://localhost:5000/",
+      "changeOrigin": true,
+      "pathRewrite": { "^/api" : "" }
+    }
+  }
+}
+```
+
+现在可以使用这个强大的UI库了。
+
+
+
+既然提到了前端的展示，那么哪个页面展示哪些东西呢？我们在routers这个文件里解决。这里我想要一个展示一篇文章的页面，一个展示所有文章的缩略的页面。展示单篇文章的页面我们放在```/```这个路由下，展示所有文章缩略的页面我们放在```/posts```这个路由下。
+
+```javascript
+import React from 'react';
+import { Router, Route } from 'dva/router';
+import Posts from './routes/Posts'
+import Post from './routes/Post'
+function RouterConfig({ history }) {
+  return (
+    <Router history={history}>
+      <Route path="/" component={Posts} />
+      <Route path="/post" component={Post}/>
+    </Router>
+  );
+}
+
+export default RouterConfig;
+```
+接下来我们去写各个页面里的组件，也就是在routes这个文件夹里创建Posts.js和Post.js这两个文件。顾名思义，一个代表所有文章的页面，一个代表单篇文章的页面。
+
+来看看单篇文章页面```/```
+
+```javascript
+import {connect} from 'dva'
+import {Layout,Menu} from 'antd'
+import {Link} from 'dva/router'
+const Header=Layout.Header;
+function Post({loading,currentDisplay}){
+  if(loading){
+    return <h1>loading</h1>
+  }
+  else {
+    return (
+      <Layout>
+        <Header>
+          <Menu
+            theme="dark"
+            mode="horizontal"
+            defaultSelectedKeys={['1']}
+            style={{ lineHeight: '64px' }}
+          >
+            <Menu.Item key="1"><Link to="/">文章</Link></Menu.Item>
+            <Menu.Item key="2"><Link to="/posts">文章库</Link></Menu.Item>
+          </Menu>
+        </Header>
+        <p>标题:{currentDisplay.title}</p>
+        <p>内容:{currentDisplay.text}</p>
+
+      </Layout>
+    )
+  }
+}
+function mapStateToProps(state){
+  const {currentDisplay} = state.posts;
+  return{
+    loading: state.loading.models.posts,
+    currentDisplay
+  }
+}
+export default connect(mapStateToProps)(Post)
+```
+
+```function Post```是我们的组件，它接受两个参数，分别是loading和currentDisplay，currentDisplay之前讲了，是posts这个模型里的一个状态（state)。loading是loading这个模型提供的，如果posts模型正在进行异步请求，那么其值为true，如果没有进行异步请求，那么其值为true。
+
+等等，loading这个模型哪来的，我们刚刚不是只创建了posts模型吗？loading这个模型是dva的一个插件提供的，当我们的模型在请求数据的时候，就会更新loading这个状态，以免我们手动更新loading状态。你可能又要问了，为什么要管loading状态呢？你想，如果你正在请求数据，数据还没拿到，但是页面已经更新了，但是没有数据，所以就会出问题吧，所以我们需要知道数据到底什么时候拿到，然后再更新页面，这就是loading状态的作用。要用这个插件的话，得先用npm下载，```npm i dva-loading --save```
+然后还要更新下`src/index.js`。
+
+```JavaScript
+import dva from 'dva';
+import './index.css';
+import createLoading from 'dva-loading';//更新的部分
+
+const app = dva();
+
+app.use(createLoading());//更新的部分
+
+app.model(require('./models/posts'));
+
+app.router(require('./router'));
+
+app.start('#root');
+```
+
+回到我们的`Post`组件，当正在异步请求数据的时候，返回`<h1>loading</h1>`，当请求完数据时，返回我们要展示的东西，一个是导航栏`Header`,（里面有个`Link`,可以认为是`html里的<a>标签`的react版本），一个是单篇文章的数据`currentDisplay.title,currentDisplay.text`。
+
+下面有个函数`mapStateToProps`和`connect`可能让人有些疑惑，说白了，就是把我们模型里的状态，作为属性传给我们的组件。具体可看react-redux。
+
+再看所有文章的缩略页面`/posts`
+
+```javascript
+import {connect} from 'dva'
+import {Layout,Menu} from 'antd'
+import {Link} from 'dva/router'
+const Header=Layout.Header;
+function Posts({posts,loading}){
+  if(loading){
+    return <h1>loading</h1>
+  }
+  else {
+    return (
+
+      <Layout>
+        <Header>
+          <Menu
+            theme="dark"
+            mode="horizontal"
+            defaultSelectedKeys={['2']}
+            style={{ lineHeight: '64px' }}
+          >
+            <Menu.Item key="1"><Link to="/">文章</Link></Menu.Item>
+            <Menu.Item key="2"><Link to="/posts">文章库</Link></Menu.Item>
+          </Menu>
+        </Header>
+        {posts.map((post, index)=>(
+          <p key={index}>标题:{post.title}</p>
+        ))}
+
+      </Layout>
+    )
+  }
+}
+function mapStateToProps(state){
+  const {data:posts} = state.posts;
+  return{
+    posts,
+    loading: state.loading.models.posts,
+  }
+}
+export default connect(mapStateToProps)(Posts)
+
+```
+
+这两个页面几乎一模一样。所以要想个办法把相同的部分写一次就够了。究其原因，是因为这两个页面都有导航栏这个部分，所以这个部分写了两次，所以得把这个导航栏抽出来。代码如下：
+
+```javascript
+// routes/posts.js
+import {connect} from 'dva'
+import MainLayout from '../components/MainLayout'
+function Posts({posts,loading}){
+  if(loading){
+    return <h1>loading</h1>
+  }
+  else {
+    return (
+
+      <MainLayout selectedKey="2">
+        {posts.map((post, index)=>(
+          <p key={index}>标题:{post.title}</p>
+        ))}
+
+      </MainLayout>
+    )
+  }
+}
+function mapStateToProps(state){
+  const {data:posts} = state.posts;
+  return{
+    posts,
+    loading: state.loading.models.posts,
+  }
+}
+export default connect(mapStateToProps)(Posts)
+```
+
+```javascript
+// routes/Post.js 
+import {connect} from 'dva'
+import MainLayout from '../components/MainLayout'
+function Post({loading,currentDisplay}){
+  if(loading){
+    return <h1>loading</h1>
+  }
+  else {
+    return (
+     <MainLayout selectedKey="1">
+        <p>标题:{currentDisplay.title}</p>
+        <p>内容:{currentDisplay.text}</p>
+
+     </MainLayout>
+    )
+  }
+}
+function mapStateToProps(state){
+  const {currentDisplay} = state.posts;
+  return{
+    loading: state.loading.models.posts,
+    currentDisplay
+  }
+}
+export default connect(mapStateToProps)(Post)
+```
+
+```javascript
+// components/MainLayout.js
+import {Layout,Menu} from 'antd'
+import {Link} from 'dva/router'
+const Header=Layout.Header;
+export default function MainLayout({selectedKey,children}) {
+  return (
+
+    <Layout>
+      <Header>
+        <Menu
+          theme="dark"
+          mode="horizontal"
+          defaultSelectedKeys={[selectedKey]}
+          style={{ lineHeight: '64px' }}
+        >
+          <Menu.Item key="1"><Link to="/">文章</Link></Menu.Item>
+          <Menu.Item key="2"><Link to="/posts">文章库</Link></Menu.Item>
+        </Menu>
+      </Header>
+      {children}
+
+    </Layout>
+  )
+}
+```
+
+到此，前端的展示已经做的差不多了，效果如下图：
+![post](http://oh8c4fk40.bkt.clouddn.com/1CC30482-C02D-4358-9D54-EE8CA8A6150E.png)
+![posts](http://oh8c4fk40.bkt.clouddn.com/D73E74BF-03CD-416B-A666-147025C540D9.png)
+
+里面的文章数据是我用shell向数据库添加的，前面有讲过怎么添加。
+
+有的同学肯定觉得这也太丑了吧，因为没有写css的缘故，但是我们的整体架构已经搭好了，css相对来说比较容易写，先不急着写，最后统一写。
+
+接下来有个问题是，怎么把前端用户输入的数据传入数据库，因为我们需要用户在前端写好博客，然后我们的程序把博客送到数据库里存储。而不是我们每次写博客都用shell添加。
+
+###博客数据添加
+有了前面的经验，这次我们如法炮制。
+
+首先写models，由于都是posts这个model，所以不用另写一个model，就在这个model里添加东西。
 
