@@ -759,9 +759,102 @@ export default function MainLayout({selectedKey,children}) {
 
 接下来有个问题是，怎么把前端用户输入的数据传入数据库，因为我们需要用户在前端写好博客，然后我们的程序把博客送到数据库里存储。而不是我们每次写博客都用shell添加。
 
-### 博客数据添加  
+### 博客数据添加
 
-有了前面的经验，这次我们如法炮制。
+要添加博客数据，一般是在前端把博客数据用post方法，发送到后端，然后后端拿到数据，存入数据库。所以我们先得在后端加点东西，来处理这个逻辑。
+
+```python
+@app.route('/posts/create',methods=["POST"])
+def posts_create(): 
+    title = request.json.get('title')
+    text = request.json.get('text')
+    if title and text:
+        new_post = Post(title=title,text=text)
+        db.session.add(new_post)
+        response = jsonify(new_post.to_json())
+        response.status_code=200
+        return response
+    else:
+        response = jsonify({'msg':'need title and text' })
+        response.status_code=400
+        return response
+```
+
+下面来看前端的部分
+  
 
 首先写models，由于都是posts这个model，所以不用另写一个model，就在这个model里添加东西。
+
+```javascript
+effects: {
+	//在effects中添加一个异步函数，postPost
+	*postPost({payload},{call,put}){
+	  const {data,err}=yield call(postsService.postPost,{payload});
+	  //post数据成功，就fetch新的数据库里的博客内容
+	  if(data) {
+	    yield put({
+	      type: 'fetch'
+	    })
+	  }
+	  //如果错误，就在控制台里表示一下
+	  if(err){
+	    console.log('error')
+	  }
+	}
+	
+}
+``` 
+
+然后在services里加上与后端的异步请求
+
+```javascript
+export function postPost({payload}){
+  let title=payload.title;
+  let text=payload.text;
+  return request(`/api/posts/create`,{
+    method:'POST',//指明方法为post
+    headers:{
+      'Content-Type':'application/json'//指明传的数据为json格式
+    },
+    body:JSON.stringify({title:title,text:text})
+  })
+}
+``` 
+
+再在展示组件posts中加上
+
+```javascript
+function Posts({posts,loading,dispatch}){
+		
+  function postPost(){//此函数获取输入框里的title和text，并dispatch一个异步函数来post数据。
+    let title=document.getElementById('title').value;
+    let text = document.getElementById('text').value;
+    dispatch({type:'posts/postPost',payload:{title,text}})
+  }
+  if(loading){
+    return <h1>loading</h1>
+  }
+
+  else {
+    return (
+
+      <MainLayout selectedKey="2">
+        {posts.map((post, index)=>(
+          <p key={index}>标题:{post.title}</p>
+        ))}
+        <center>
+          标题:<input id='title' type="text"/>
+          内容:<input id='text' type="text"/>
+          <button onClick={postPost}>提交</button>//被点击的时候调用postPost函数
+        </center>
+      </MainLayout>
+    )
+  }
+}
+```
+
+ok,这个时候我们在输入框里输入一些东西，就能够将新的文章发布啦。
+比如我输入标题:third 内容：333
+最后的效果就是
+![post](http://oh8c4fk40.bkt.clouddn.com/BC305F0A-7F45-44CC-BF62-0242C5B7BF27.png)
 
